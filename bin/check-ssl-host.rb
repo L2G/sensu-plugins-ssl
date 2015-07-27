@@ -42,6 +42,8 @@ require 'socket'
 # Check SSL Host
 #
 class CheckSSLHost < Sensu::Plugin::Check::CLI
+  attr_accessor :ssl_client, :ssl_context
+
   check_name 'check_ssl_host'
 
   option :critical,
@@ -82,14 +84,9 @@ class CheckSSLHost < Sensu::Plugin::Check::CLI
          boolean: true
 
   def get_cert_chain(host, port)
-    tcp_client = TCPSocket.new(host, port)
-    ssl_context = OpenSSL::SSL::SSLContext.new
-    ssl_client = OpenSSL::SSL::SSLSocket.new(tcp_client, ssl_context)
-    # SNI
-    ssl_client.hostname = host if ssl_client.respond_to? :hostname=
-    ssl_client.connect
+    open_new_connection(host, port)
     certs = ssl_client.peer_cert_chain
-    ssl_client.close
+    close_connection
     certs
   end
 
@@ -129,5 +126,20 @@ class CheckSSLHost < Sensu::Plugin::Check::CLI
     verify_hostname(chain[0]) unless config[:skip_hostname_verification]
     verify_certificate_chain(chain) unless config[:skip_chain_verification]
     verify_expiry(chain[0])
+  end
+
+  private
+
+  def open_new_connection(host, port)
+    tcp_client = TCPSocket.new(host, port)
+    self.ssl_context = OpenSSL::SSL::SSLContext.new
+    self.ssl_client = OpenSSL::SSL::SSLSocket.new(tcp_client, ssl_context)
+    # SNI
+    ssl_client.hostname = host if ssl_client.respond_to? :hostname=
+    ssl_client.connect
+  end
+
+  def close_connection
+    ssl_client.close
   end
 end
