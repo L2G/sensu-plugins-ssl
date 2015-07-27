@@ -83,11 +83,8 @@ class CheckSSLHost < Sensu::Plugin::Check::CLI
          long: '--skip-chain-verification',
          boolean: true
 
-  def get_cert_chain(host, port)
-    open_new_connection(host, port)
-    certs = ssl_client.peer_cert_chain
-    close_connection
-    certs
+  def get_cert_chain
+    ssl_client.peer_cert_chain
   end
 
   def verify_expiry(cert) # rubocop:disable all
@@ -122,10 +119,12 @@ class CheckSSLHost < Sensu::Plugin::Check::CLI
   end
 
   def run
-    chain = get_cert_chain(config[:host], config[:port])
+    open_new_connection(config[:host], config[:port])
+    chain = get_cert_chain
     verify_hostname(chain[0]) unless config[:skip_hostname_verification]
     verify_certificate_chain(chain) unless config[:skip_chain_verification]
     verify_expiry(chain[0])
+    close_connection
   end
 
   private
