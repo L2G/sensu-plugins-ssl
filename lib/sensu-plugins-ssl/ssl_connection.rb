@@ -29,8 +29,7 @@ module SensuPluginsSSL
 
     # Days until the server certificate expires
     def days_until_expiry
-      cert = peer_cert_chain.first
-      (cert.not_after.to_date - Date.today).to_i
+      (peer_cert.not_after.to_date - Date.today).to_i
     end
 
     def peer_cert
@@ -46,8 +45,7 @@ module SensuPluginsSSL
     end
 
     def peer_identity_valid?
-      cert = peer_cert_chain.first
-      OpenSSL::SSL.verify_certificate_identity(cert, @host)
+      OpenSSL::SSL.verify_certificate_identity(peer_cert, @host)
     end
   end
 end
