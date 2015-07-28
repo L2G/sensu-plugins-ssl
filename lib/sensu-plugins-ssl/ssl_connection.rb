@@ -33,8 +33,21 @@ module SensuPluginsSSL
       (cert.not_after.to_date - Date.today).to_i
     end
 
+    def peer_cert
+      @ssl_client.peer_cert
+    end
+
     def peer_cert_chain
       @ssl_client.peer_cert_chain
+    end
+
+    def peer_identity
+      peer_cert.subject
+    end
+
+    def peer_identity_valid?
+      cert = peer_cert_chain.first
+      OpenSSL::SSL.verify_certificate_identity(cert, @host)
     end
   end
 end
