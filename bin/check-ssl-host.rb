@@ -97,9 +97,8 @@ class CheckSSLHost < Sensu::Plugin::Check::CLI
   end
 
   def verify_hostname(ssl_connection)
-    unless ssl_connection.peer_identity_valid?
-      critical "#{config[:host]} hostname mismatch (#{ssl_connection.peer_identity})"
-    end
+    return if ssl_connection.peer_identity_valid?
+    critical "#{config[:host]} hostname mismatch (#{ssl_connection.peer_identity})"
   end
 
   def run
