@@ -106,9 +106,9 @@ class CheckSSLHost < Sensu::Plugin::Check::CLI
     critical "#{config[:host]} - Invalid certificate chain" unless valid
   end
 
-  def verify_hostname(cert)
-    unless OpenSSL::SSL.verify_certificate_identity(cert, config[:host]) # rubocop:disable all
-      critical "#{config[:host]} hostname mismatch (#{cert.subject})"
+  def verify_hostname(ssl_connection)
+    unless ssl_connection.peer_identity_valid?
+      critical "#{config[:host]} hostname mismatch (#{ssl_connection.peer_identity})"
     end
   end
 
@@ -116,7 +116,7 @@ class CheckSSLHost < Sensu::Plugin::Check::CLI
     connection = SensuPluginsSSL::SSLConnection.new(config[:host], config[:port])
     connection.connect
     chain = connection.peer_cert_chain
-    verify_hostname(chain[0]) unless config[:skip_hostname_verification]
+    verify_hostname(connection) unless config[:skip_hostname_verification]
     verify_certificate_chain(chain) unless config[:skip_chain_verification]
     verify_expiry(connection)
     connection.close
