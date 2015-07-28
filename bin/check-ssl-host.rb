@@ -116,7 +116,7 @@ class CheckSSLHost < Sensu::Plugin::Check::CLI
   def run
     connection = SensuPluginsSSL::SSLConnection.new(config[:host], config[:port])
     connection.connect
-    chain = connection.get_cert_chain
+    chain = connection.peer_cert_chain
     verify_hostname(chain[0]) unless config[:skip_hostname_verification]
     verify_certificate_chain(chain) unless config[:skip_chain_verification]
     verify_expiry(chain[0])

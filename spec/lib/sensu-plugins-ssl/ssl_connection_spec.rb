@@ -4,5 +4,5 @@ describe SensuPluginsSSL::SSLConnection do
   it { should respond_to(:close) }
   it { should respond_to(:connect) }
   it { should respond_to(:disconnect) }
-  it { should respond_to(:get_cert_chain) }
+  it { should respond_to(:peer_cert_chain) }
 end

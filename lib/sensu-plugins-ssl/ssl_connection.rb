@@ -26,7 +26,7 @@ module SensuPluginsSSL
     end
     alias_method :disconnect, :close
 
-    def get_cert_chain
+    def peer_cert_chain
       @ssl_client.peer_cert_chain
     end
   end
