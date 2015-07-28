@@ -34,7 +34,6 @@
 #
 
 require 'sensu-plugin/check/cli'
-require 'date'
 require 'sensu-plugins-ssl/ssl_connection'
 
 #
@@ -82,9 +81,9 @@ class CheckSSLHost < Sensu::Plugin::Check::CLI
          long: '--skip-chain-verification',
          boolean: true
 
-  def verify_expiry(cert) # rubocop:disable all
+  def verify_expiry(ssl_connection) # rubocop:disable all
     # Expiry check
-    days = (cert.not_after.to_date - Date.today).to_i
+    days = ssl_connection.days_until_expiry
     message = "#{config[:host]} - #{days} days until expiry"
     critical "#{config[:host]} - Expired #{days} days ago" if days < 0
     critical message if days < config[:critical]
@@ -119,7 +118,7 @@ class CheckSSLHost < Sensu::Plugin::Check::CLI
     chain = connection.peer_cert_chain
     verify_hostname(chain[0]) unless config[:skip_hostname_verification]
     verify_certificate_chain(chain) unless config[:skip_chain_verification]
-    verify_expiry(chain[0])
+    verify_expiry(connection)
     connection.close
   end
 end
