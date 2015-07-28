@@ -1,3 +1,4 @@
+require 'date'
 require 'openssl'
 require 'socket'
 
@@ -25,6 +26,12 @@ module SensuPluginsSSL
       @ssl_context = nil
     end
     alias_method :disconnect, :close
+
+    # Days until the server certificate expires
+    def days_until_expiry
+      cert = peer_cert_chain.first
+      (cert.not_after.to_date - Date.today).to_i
+    end
 
     def peer_cert_chain
       @ssl_client.peer_cert_chain
