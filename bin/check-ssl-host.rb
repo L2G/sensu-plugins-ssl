@@ -91,19 +91,9 @@ class CheckSSLHost < Sensu::Plugin::Check::CLI
     ok message
   end
 
-  def verify_certificate_chain(certs)
-    # Validates that a chain of certs are each signed by the next
-    # NOTE: doesn't validate that the top of the chain is signed by a trusted
-    # CA.
-    valid = true
-    parent = nil
-    certs.reverse_each do |c|
-      if parent
-        valid &= c.verify(parent.public_key)
-      end
-      parent = c
-    end
-    critical "#{config[:host]} - Invalid certificate chain" unless valid
+  def verify_certificate_chain(ssl_connection)
+    return if ssl_connection.cert_chain_valid?
+    critical "#{config[:host]} - Invalid certificate chain"
   end
 
   def verify_hostname(ssl_connection)
@@ -115,9 +105,8 @@ class CheckSSLHost < Sensu::Plugin::Check::CLI
   def run
     connection = SensuPluginsSSL::SSLConnection.new(config[:host], config[:port])
     connection.connect
-    chain = connection.peer_cert_chain
     verify_hostname(connection) unless config[:skip_hostname_verification]
-    verify_certificate_chain(chain) unless config[:skip_chain_verification]
+    verify_certificate_chain(connection) unless config[:skip_chain_verification]
     verify_expiry(connection)
     connection.close
   end

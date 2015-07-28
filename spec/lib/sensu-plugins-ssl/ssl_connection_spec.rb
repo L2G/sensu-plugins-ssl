@@ -1,6 +1,7 @@
 describe SensuPluginsSSL::SSLConnection do
   subject { described_class.new('localhost', '443') }
 
+  it { should respond_to(:cert_chain_valid?) }
   it { should respond_to(:close) }
   it { should respond_to(:connect) }
   it { should respond_to(:days_until_expiry) }

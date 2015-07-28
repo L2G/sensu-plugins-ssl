@@ -11,6 +11,21 @@ module SensuPluginsSSL
       @port = port
     end
 
+    # Validates that a chain of certs are each signed by the next
+    # NOTE: doesn't validate that the top of the chain is signed by a trusted
+    # CA.
+    def cert_chain_valid?
+      valid = true
+      parent = nil
+      peer_cert_chain.reverse_each do |c|
+        if parent
+          valid &= c.verify(parent.public_key)
+        end
+        parent = c
+      end
+      valid
+    end
+
     def connect
       tcp_socket = TCPSocket.new(host, port)
       @ssl_context = OpenSSL::SSL::SSLContext.new
