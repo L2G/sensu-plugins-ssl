@@ -12,17 +12,17 @@ module SensuPluginsSSL
     end
 
     def connect
-      tcp_client = TCPSocket.new(host, port)
+      tcp_socket = TCPSocket.new(host, port)
       @ssl_context = OpenSSL::SSL::SSLContext.new
-      @ssl_client = OpenSSL::SSL::SSLSocket.new(tcp_client, @ssl_context)
+      @ssl_socket = OpenSSL::SSL::SSLSocket.new(tcp_socket, @ssl_context)
       # SNI
-      @ssl_client.hostname = host if @ssl_client.respond_to? :hostname=
-      @ssl_client.connect
+      @ssl_socket.hostname = host if @ssl_socket.respond_to? :hostname=
+      @ssl_socket.connect
     end
 
     def close
-      @ssl_client.close
-      @ssl_client = nil
+      @ssl_socket.close
+      @ssl_socket = nil
       @ssl_context = nil
     end
     alias_method :disconnect, :close
@@ -34,11 +34,11 @@ module SensuPluginsSSL
     end
 
     def peer_cert
-      @ssl_client.peer_cert
+      @ssl_socket.peer_cert
     end
 
     def peer_cert_chain
-      @ssl_client.peer_cert_chain
+      @ssl_socket.peer_cert_chain
     end
 
     def peer_identity
