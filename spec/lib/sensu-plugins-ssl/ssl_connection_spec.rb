@@ -10,4 +10,8 @@ describe SensuPluginsSSL::SSLConnection do
   it { should respond_to(:peer_cert_chain) }
   it { should respond_to(:peer_identity) }
   it { should respond_to(:peer_identity_valid?) }
+
+  context 'defunct methods' do
+    it { should_not respond_to(:port) }
+  end
 end

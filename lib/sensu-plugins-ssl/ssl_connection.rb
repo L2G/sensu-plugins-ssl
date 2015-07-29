@@ -7,7 +7,7 @@ module SensuPluginsSSL
   # friendly methods for verifying aspects of the connection (peer certificate
   # validity and age, etc.)
   class SSLConnection
-    attr_reader :host, :port
+    attr_reader :host
 
     # @param host [String] hostname of the peer on the other end of the connection
     # @param port_or_socket [Integer, IO] a port number to connect to *or* an
@@ -20,7 +20,7 @@ module SensuPluginsSSL
       if port_or_socket.kind_of?(IO)
         @tcp_socket = port_or_socket
       else
-        @port = port
+        @port = port_or_socket
       end
     end
 
@@ -46,7 +46,7 @@ module SensuPluginsSSL
 
     # @api private
     def connect
-      @tcp_socket ||= TCPSocket.new(host, port)
+      @tcp_socket ||= TCPSocket.new(host, @port)
       @ssl_context = OpenSSL::SSL::SSLContext.new
       @ssl_socket = OpenSSL::SSL::SSLSocket.new(@tcp_socket, @ssl_context)
       # SNI
