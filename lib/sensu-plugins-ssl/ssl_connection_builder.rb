@@ -8,7 +8,13 @@ module SensuPluginsSSL
   class SSLConnectionBuilder
     def build_and_connect(host, port)
       tcp_socket = TCPSocket.new(host, port)
-      SSLConnection.new(host, tcp_socket)
+      ssl_socket = OpenSSL::SSL::SSLSocket.new(tcp_socket)
+
+      # SNI
+      ssl_socket.hostname = host if ssl_socket.respond_to? :hostname=
+      ssl_socket.connect
+
+      SensuPluginsSSL::SSLConnection.new(host, ssl_socket)
     end
   end
 end

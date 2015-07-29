@@ -1,6 +1,5 @@
 require 'date'
 require 'openssl'
-require 'socket'
 
 module SensuPluginsSSL
   # This class is intended to wrap an <OpenSSL::SSL::SSLSocket> and provide
@@ -9,18 +8,19 @@ module SensuPluginsSSL
   class SSLConnection
     attr_reader :host
 
+    # Setting up a new SSL/TLS connection is a complicated process.  The
+    # {SensuPluginsSSL::SSLConnectionBuilder} class is provided as a convenient
+    # factory for creating new instances of this class.
+    #
     # @param host [String] hostname of the peer on the other end of the connection
-    # @param port_or_socket [Integer, IO] a port number to connect to *or* an
-    #   existing socket
-    def initialize(host, port_or_socket)
+    # @param ssl_socket [#peer_cert] an existing instance of
+    #   OpenSSL::SSL::SSLSocket or descendant, which should already be connected
+    def initialize(host, ssl_socket)
       @host = host
+      @ssl_socket = ssl_socket
 
-      # This is not very ducky, but the OpenSSL library does say that it needs
-      # real Ruby objects for sockets
-      if port_or_socket.kind_of?(IO)
-        @tcp_socket = port_or_socket
-      else
-        @port = port_or_socket
+      unless @ssl_socket.respond_to?(:peer_cert)
+        raise ArgumentError, "Should have received some kind of SSLSocket object; got this instead: #{ssl_socket}"
       end
     end
 
@@ -42,16 +42,6 @@ module SensuPluginsSSL
         parent = c
       end
       valid
-    end
-
-    # @api private
-    def connect
-      @tcp_socket ||= TCPSocket.new(host, @port)
-      @ssl_context = OpenSSL::SSL::SSLContext.new
-      @ssl_socket = OpenSSL::SSL::SSLSocket.new(@tcp_socket, @ssl_context)
-      # SNI
-      @ssl_socket.hostname = host if @ssl_socket.respond_to? :hostname=
-      @ssl_socket.connect
     end
 
     # @api private

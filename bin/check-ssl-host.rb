@@ -34,7 +34,7 @@
 #
 
 require 'sensu-plugin/check/cli'
-require 'sensu-plugins-ssl/ssl_connection'
+require 'sensu-plugins-ssl/ssl_connection_builder'
 
 #
 # Check SSL Host
@@ -102,8 +102,7 @@ class CheckSSLHost < Sensu::Plugin::Check::CLI
   end
 
   def run
-    connection = SensuPluginsSSL::SSLConnection.new(config[:host], config[:port])
-    connection.connect
+    connection = SensuPluginsSSL::SSLConnectionBuilder.new.build_and_connect(config[:host], config[:port])
     verify_hostname(connection) unless config[:skip_hostname_verification]
     verify_certificate_chain(connection) unless config[:skip_chain_verification]
     verify_expiry(connection)
