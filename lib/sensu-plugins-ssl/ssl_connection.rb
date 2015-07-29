@@ -6,9 +6,16 @@ module SensuPluginsSSL
   class SSLConnection
     attr_reader :host, :port
 
-    def initialize(host, port)
+    def initialize(host, port_or_socket)
       @host = host
-      @port = port
+
+      # This is not very ducky, but the OpenSSL library does say that it needs
+      # real Ruby objects for sockets
+      if port_or_socket.kind_of?(IO)
+        @tcp_socket = port_or_socket
+      else
+        @port = port
+      end
     end
 
     # Validates that a chain of certs are each signed by the next
@@ -27,9 +34,9 @@ module SensuPluginsSSL
     end
 
     def connect
-      tcp_socket = TCPSocket.new(host, port)
+      @tcp_socket ||= TCPSocket.new(host, port)
       @ssl_context = OpenSSL::SSL::SSLContext.new
-      @ssl_socket = OpenSSL::SSL::SSLSocket.new(tcp_socket, @ssl_context)
+      @ssl_socket = OpenSSL::SSL::SSLSocket.new(@tcp_socket, @ssl_context)
       # SNI
       @ssl_socket.hostname = host if @ssl_socket.respond_to? :hostname=
       @ssl_socket.connect
