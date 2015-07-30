@@ -2,10 +2,11 @@ require 'date'
 require 'openssl'
 
 module SensuPluginsSSL
-  # This class is intended to wrap an <OpenSSL::SSL::SSLSocket> and provide
+  # This class is intended to wrap an OpenSSL::SSL::SSLSocket and provide
   # friendly methods for verifying aspects of the connection (peer certificate
   # validity and age, etc.)
   class SSLConnection
+    # The hostname of the server on the other end of the connection
     attr_reader :host
 
     # Setting up a new SSL/TLS connection is a complicated process.  The

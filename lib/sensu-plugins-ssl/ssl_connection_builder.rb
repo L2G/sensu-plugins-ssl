@@ -4,8 +4,13 @@ require 'sensu-plugins-ssl/ssl_connection'
 module SensuPluginsSSL
   # This class has the responsibility of opening a new SSL/TLS connection,
   # optionally negotiating with STARTTLS, then returning the prepared connection
-  # as a <SensuPluginsSSL::SSLConnection>.
+  # as a {SensuPluginsSSL::SSLConnection}.
   class SSLConnectionBuilder
+    # Open a new SSL/TLS connection wrapped up in a
+    # {SensuPluginsSSL::SSLConnection} instance.  This uses TCPSocket and
+    # OpenSSL::SSL::SSLSocket to make the connection.
+    #
+    # @return [SensuPluginsSSL::SSLConnection]
     def build_and_connect(host, port)
       tcp_socket = TCPSocket.new(host, port)
       ssl_socket = OpenSSL::SSL::SSLSocket.new(tcp_socket)
