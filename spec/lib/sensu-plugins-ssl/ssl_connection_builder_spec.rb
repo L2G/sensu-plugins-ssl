@@ -67,5 +67,25 @@ describe SensuPluginsSSL::SSLConnectionBuilder do
       ssl_connection = subject.build_and_connect('zuzexs2v', 8272)
       expect(ssl_connection).to be_kind_of(SensuPluginsSSL::SSLConnection)
     end
+
+    it 'accepts :starttls => "smtp" and triggers an SMTP STARTTLS handshake' do
+      # mock TCPSocket for isolation
+      tcp_socket = double('TCPSocket instance')
+      allow(tcp_socket).to receive(:readline).and_return('This is an expected failure')
+      class_double('TCPSocket', new: tcp_socket).as_stubbed_const
+
+      # mock OpenSSL::SSL::SSLSocket for isolation
+      ssl_socket_class = class_double('OpenSSL::SSL::SSLSocket').as_stubbed_const
+      ssl_socket = instance_double('OpenSSL::SSL::SSLSocket')
+      allow(ssl_socket_class).to receive(:new).and_return(ssl_socket)
+      allow(ssl_socket).to receive(:connect)
+      allow(ssl_socket).to receive(:peer_cert)
+
+      # mock SensuPluginsSSL::StarttlsHandshake for isolation
+      starttls_helper_class = class_double('SensuPluginsSSL::StarttlsHelper').as_stubbed_const
+      expect(starttls_helper_class).to receive(:handshake_smtp).with(tcp_socket).and_return(tcp_socket)
+
+      subject.build_and_connect('fsjhkwrue', 1928, starttls: 'smtp')
+    end
   end
 end
